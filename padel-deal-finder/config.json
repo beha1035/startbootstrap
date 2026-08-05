@@ -1,0 +1,25 @@
+{
+  "profile": {
+    "size_eu": "44.5",
+    "size_accept": ["44.5", "44,5", "44 1/2", "44 2/3", "44.67"],
+    "brands": null,
+    "max_price": null,
+    "max_shipping": 5.0,
+    "country": "FR",
+    "min_discount_pct": 0
+  },
+  "sources": [
+    {
+      "name": "Esprit Padel",
+      "platform": "shopify",
+      "base": "https://www.esprit-padel-shop.com",
+      "shipping": { "free_from": 60, "flat": 4.9, "note": "seuils a confirmer" }
+    },
+    {
+      "name": "Padel Market",
+      "platform": "shopify",
+      "base": "https://padelmarket.com",
+      "shipping": { "free_from": 80, "flat": 5.95, "note": "seuils a confirmer" }
+    }
+  ]
+}
