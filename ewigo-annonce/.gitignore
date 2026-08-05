@@ -1,0 +1,5 @@
+# Sorties par vehicule (donnees + photos telechargees) : ne pas versionner
+[0-9]*/
+*/photos/
+annonce.json
+annonce.md
