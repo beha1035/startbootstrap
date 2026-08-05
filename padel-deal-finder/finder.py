@@ -20,6 +20,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.request
 
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -39,6 +40,19 @@ def http_json(url):
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
     with urllib.request.urlopen(req, timeout=40) as r:
         return json.loads(r.read().decode("utf-8", "replace"))
+
+
+def http_json_retry(url, tries=3, base_delay=1.5):
+    """http_json avec retries (certaines boutiques renvoient des 500 transitoires)."""
+    last = None
+    for attempt in range(tries):
+        try:
+            return http_json(url)
+        except Exception as e:  # noqa: BLE001
+            last = e
+            if attempt < tries - 1:
+                time.sleep(base_delay * (attempt + 1))
+    raise last
 
 
 def norm_size(s):
@@ -112,16 +126,22 @@ def shipping_cost(source, price):
 def scan_shopify(source, prof, accept_norm):
     """Retourne la liste des offres (chaussures dispo dans la taille) d'une boutique."""
     base = source["base"].rstrip("/")
-    offers, page = [], 1
-    while page <= 12:  # garde-fou
+    offers, page, empty_streak = [], 1, 0
+    while page <= 15:  # garde-fou
         try:
-            data = http_json(f"{base}/products.json?limit=250&page={page}")
+            data = http_json_retry(f"{base}/products.json?limit=250&page={page}")
         except Exception as e:  # noqa: BLE001
-            print(f"  ! {source['name']} page {page}: {e}", file=sys.stderr)
-            break
+            # page defaillante apres retries : on la saute au lieu d'abandonner la boutique
+            print(f"  ! {source['name']} page {page} ignoree ({e})", file=sys.stderr)
+            page += 1
+            empty_streak += 1
+            if empty_streak >= 3:  # plusieurs pages KO d'affilee -> on arrete
+                break
+            continue
         prods = data.get("products", [])
         if not prods:
             break
+        empty_streak = 0
         for p in prods:
             if not is_shoe(p):
                 continue
