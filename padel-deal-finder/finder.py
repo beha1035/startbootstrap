@@ -103,10 +103,11 @@ MEN_HINTS = ("homme", " men", "hombre", "man ", "herren", "mens", "men's", "men2
 def sole_type(p):
     """Devine le type de semelle : 'clay', 'all' (toutes surfaces), 'indoor' ou '?'."""
     blob = (p.get("title", "") + " " + " ".join(p.get("tags", []) or [])).lower()
-    if any(k in blob for k in ("terre battue", "clay", "terra", "padel")):
-        return "clay"
-    if any(k in blob for k in ("toutes surfaces", "all court", "all-court", "omni", "multi")):
+    # "toutes surfaces / all court" prime (sinon "clay" dans les tags fausse tout)
+    if any(k in blob for k in ("toutes surfaces", "all court", "all-court", "all surface", "omni", "multi surface")):
         return "all"
+    if any(k in blob for k in ("terre battue", "clay", "terra battuta")):
+        return "clay"
     if any(k in blob for k in ("moquette", "indoor", "carpet")):
         return "indoor"
     return "?"
