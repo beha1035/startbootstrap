@@ -96,6 +96,22 @@ def size_option_index(p):
     return best
 
 
+WOMEN_HINTS = ("femme", "women", "woman", "mujer", "dama", "wmn", "w's", "ladies")
+MEN_HINTS = ("homme", " men", "hombre", "man ", "herren", "mens", "men's", "men2")
+
+
+def product_gender(p):
+    """Devine le genre d'une chaussure : 'femme', 'homme' ou 'unisexe'."""
+    blob = (p.get("title", "") + " " + " ".join(p.get("tags", []) or [])).lower()
+    is_w = any(h in blob for h in WOMEN_HINTS)
+    is_m = any(h in blob for h in MEN_HINTS)
+    if is_w and not is_m:
+        return "femme"
+    if is_m and not is_w:
+        return "homme"
+    return "unisexe"
+
+
 def is_shoe(p):
     title = (p.get("title", "") or "").lower()
     ptype = (p.get("product_type", "") or "").lower()
@@ -149,6 +165,12 @@ def scan_shopify(source, prof, accept_norm):
             if prof.get("brands"):
                 if not any(b.lower() in brand.lower() for b in prof["brands"]):
                     continue
+            gender = product_gender(p)
+            want = (prof.get("gender") or "all").lower()
+            if want == "homme" and gender == "femme":
+                continue  # on garde homme + unisexe
+            if want == "femme" and gender == "homme":
+                continue
             sidx = size_option_index(p)
             for v in p.get("variants", []):
                 opt = v.get(f"option{sidx}") or v.get("option1") or v.get("title")
@@ -172,6 +194,7 @@ def scan_shopify(source, prof, accept_norm):
                     continue
                 offers.append({
                     "brand": brand,
+                    "gender": gender,
                     "title": p.get("title"),
                     "size": opt,
                     "price": price,
@@ -210,6 +233,8 @@ def main():
     ap.add_argument("--config", default=os.path.join(HERE, "config.json"))
     ap.add_argument("--size", help="surcharge la taille EU (ex: 44.5)")
     ap.add_argument("--max-price", type=float)
+    ap.add_argument("--gender", choices=["homme", "femme", "all"],
+                    help="filtre genre (par defaut : valeur du config)")
     ap.add_argument("--top", type=int, default=20)
     ap.add_argument("--min-discount", type=int, help="ne garder que les remises >= X%")
     ap.add_argument("--new-only", action="store_true",
@@ -229,6 +254,8 @@ def main():
         prof["max_price"] = args.max_price
     if args.min_discount is not None:
         prof["min_discount_pct"] = args.min_discount
+    if args.gender:
+        prof["gender"] = args.gender
 
     accept_norm = {norm_size(s) for s in prof.get("size_accept", [prof["size_eu"]])}
     accept_norm.add(norm_size(prof["size_eu"]))

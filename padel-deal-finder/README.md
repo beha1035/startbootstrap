@@ -13,7 +13,12 @@ frais de port ≤ 5 € ou offerts.
 ```bash
 python3 finder.py --top 15                 # top 15 offres du moment
 python3 finder.py --size 45 --min-discount 40
+python3 finder.py --gender homme            # homme + unisexe (defaut config)
+python3 finder.py --gender all              # inclut les modeles femme
 ```
+
+Le filtre `gender` (défaut `homme` dans `config.json`) garde les modèles
+homme **et** unisexe et écarte les versions femme.
 
 Produit un classement console + `report.md` / `report.json`.
 
