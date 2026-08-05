@@ -20,6 +20,12 @@
       "platform": "shopify",
       "base": "https://padelmarket.com",
       "shipping": { "free_from": 80, "flat": 5.95, "note": "seuils a confirmer" }
+    },
+    {
+      "name": "Padel Point",
+      "platform": "shopify",
+      "base": "https://www.padel-point.fr",
+      "shipping": { "free_from": 60, "flat": 4.9, "note": "seuils a confirmer" }
     }
   ]
 }

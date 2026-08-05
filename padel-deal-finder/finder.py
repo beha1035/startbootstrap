@@ -60,6 +60,28 @@ def size_matches(variant_opt, accept_norm):
     return norm_size(variant_opt) in accept_norm
 
 
+SIZE_OPT_NAMES = ("taille", "size", "pointure", "talla", "shoe size", "größe")
+
+
+def size_option_index(p):
+    """Retourne l'index (1-3) de l'option 'taille' d'un produit Shopify.
+
+    1) par le nom de l'option (Taille / Size / Pointure / Shoe size...)
+    2) repli : l'option dont les valeurs ressemblent le plus a des pointures EU.
+    """
+    opts = p.get("options") or []
+    for o in opts:
+        if any(n in (o.get("name", "") or "").lower() for n in SIZE_OPT_NAMES):
+            return o.get("position", 1)
+    best, best_score = 1, -1
+    for o in opts:
+        vals = o.get("values") or []
+        score = sum(1 for v in vals if re.match(r"^\s*(3[6-9]|4[0-9])([.,]\d| \d/\d)?\s*$", str(v)))
+        if score > best_score:
+            best, best_score = o.get("position", 1), score
+    return best
+
+
 def is_shoe(p):
     title = (p.get("title", "") or "").lower()
     ptype = (p.get("product_type", "") or "").lower()
@@ -107,8 +129,9 @@ def scan_shopify(source, prof, accept_norm):
             if prof.get("brands"):
                 if not any(b.lower() in brand.lower() for b in prof["brands"]):
                     continue
+            sidx = size_option_index(p)
             for v in p.get("variants", []):
-                opt = v.get("option1") or v.get("title")
+                opt = v.get(f"option{sidx}") or v.get("option1") or v.get("title")
                 if not size_matches(opt, accept_norm):
                     continue
                 if not v.get("available"):

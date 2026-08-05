@@ -35,13 +35,27 @@ chaque **taille** (variant) avec `price`, `compare_at_price` (prix barré) et
 la remise, on estime le port (config), on classe. Pas de navigateur, pas de
 contournement anti-bot.
 
-## Sources actuelles
+## Sources actuelles (toutes en EUR)
 
 - Esprit Padel — `esprit-padel-shop.com`
 - Padel Market — `padelmarket.com`
+- Padel Point — `padel-point.fr`
 
 Ajouter une boutique = une entrée dans `config.json` (`"platform": "shopify"`
-suffit si le site tourne sous Shopify).
+suffit si le site tourne sous Shopify). L'adaptateur détecte automatiquement
+l'option « taille » (Taille / Size / Pointure / Shoe size), même quand la
+boutique met la couleur en première option.
+
+### Sites volontairement non inclus
+
+- **Decathlon, i-Run, Alltricks, Zalando, Tennispro** : protégés par
+  anti-bot (403) → nécessiteraient un navigateur furtif (Playwright), fragile.
+- **Ventes privées (Veepee, Private Sport Shop)** : catalogue derrière
+  compte/login → pas d'accès programmatique fiable ni conforme aux CGU.
+- **The Padel Shop (UK)** : prix en GBP → exclu pour ne pas mélanger les devises.
+
+Un adaptateur Playwright pour un gros site (ex. Decathlon) est possible sur
+demande, en acceptant lenteur et fragilité accrues.
 
 ## Limites à connaître
 
