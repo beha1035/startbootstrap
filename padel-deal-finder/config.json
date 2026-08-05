@@ -3,6 +3,7 @@
     "size_eu": "44.5",
     "size_accept": ["44.5", "44,5", "44 1/2", "44 2/3", "44.67"],
     "gender": "homme",
+    "sole": "any",
     "brands": null,
     "max_price": null,
     "max_shipping": 5.0,

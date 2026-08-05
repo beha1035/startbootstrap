@@ -100,6 +100,18 @@ WOMEN_HINTS = ("femme", "women", "woman", "mujer", "dama", "wmn", "w's", "ladies
 MEN_HINTS = ("homme", " men", "hombre", "man ", "herren", "mens", "men's", "men2")
 
 
+def sole_type(p):
+    """Devine le type de semelle : 'clay', 'all' (toutes surfaces), 'indoor' ou '?'."""
+    blob = (p.get("title", "") + " " + " ".join(p.get("tags", []) or [])).lower()
+    if any(k in blob for k in ("terre battue", "clay", "terra", "padel")):
+        return "clay"
+    if any(k in blob for k in ("toutes surfaces", "all court", "all-court", "omni", "multi")):
+        return "all"
+    if any(k in blob for k in ("moquette", "indoor", "carpet")):
+        return "indoor"
+    return "?"
+
+
 def product_gender(p):
     """Devine le genre d'une chaussure : 'femme', 'homme' ou 'unisexe'."""
     blob = (p.get("title", "") + " " + " ".join(p.get("tags", []) or [])).lower()
@@ -171,6 +183,10 @@ def scan_shopify(source, prof, accept_norm):
                 continue  # on garde homme + unisexe
             if want == "femme" and gender == "homme":
                 continue
+            sole = sole_type(p)
+            want_sole = (prof.get("sole") or "any").lower()
+            if want_sole != "any" and sole != want_sole:
+                continue
             sidx = size_option_index(p)
             for v in p.get("variants", []):
                 opt = v.get(f"option{sidx}") or v.get("option1") or v.get("title")
@@ -195,6 +211,7 @@ def scan_shopify(source, prof, accept_norm):
                 offers.append({
                     "brand": brand,
                     "gender": gender,
+                    "sole": sole,
                     "title": p.get("title"),
                     "size": opt,
                     "price": price,
@@ -235,6 +252,8 @@ def main():
     ap.add_argument("--max-price", type=float)
     ap.add_argument("--gender", choices=["homme", "femme", "all"],
                     help="filtre genre (par defaut : valeur du config)")
+    ap.add_argument("--sole", choices=["clay", "all", "indoor", "any"],
+                    help="filtre semelle : clay=terre battue (ideal padel synthetique)")
     ap.add_argument("--top", type=int, default=20)
     ap.add_argument("--min-discount", type=int, help="ne garder que les remises >= X%")
     ap.add_argument("--new-only", action="store_true",
@@ -256,6 +275,8 @@ def main():
         prof["min_discount_pct"] = args.min_discount
     if args.gender:
         prof["gender"] = args.gender
+    if args.sole:
+        prof["sole"] = args.sole
 
     accept_norm = {norm_size(s) for s in prof.get("size_accept", [prof["size_eu"]])}
     accept_norm.add(norm_size(prof["size_eu"]))
@@ -299,8 +320,10 @@ def main():
         orig = f" (au lieu de {o['original']:.0f}€)" if o["original"] else ""
         disc = f"  -{o['discount_pct']}%" if o["discount_pct"] else ""
         ship = "port offert" if o["shipping"] == 0 else f"port {o['shipping']:.2f}€"
-        print(f"{i:2}. {o['brand']:10} {o['title'][:52]:52} T.{o['size']:<5} "
-              f"{o['price']:6.2f}€{disc:6}{orig:20} | {ship} | {o['shop']}")
+        sole_lbl = {"clay": "terre battue", "all": "toutes surf.",
+                    "indoor": "indoor", "?": "?"}.get(o.get("sole", "?"), "?")
+        print(f"{i:2}. {o['brand']:10} {o['title'][:46]:46} T.{o['size']:<5} "
+              f"[{sole_lbl:12}] {o['price']:6.2f}€{disc:6}{orig:20} | {ship} | {o['shop']}")
         print(f"    {o['url']}")
 
     out_json = args.json or os.path.join(HERE, "report.json")
