@@ -26,6 +26,12 @@
       "platform": "shopify",
       "base": "https://www.padel-point.fr",
       "shipping": { "free_from": 60, "flat": 4.9, "note": "seuils a confirmer" }
+    },
+    {
+      "name": "Padel Pro Shop",
+      "platform": "shopify",
+      "base": "https://www.padelproshop.com",
+      "shipping": { "free_from": 70, "flat": 4.95, "note": "seuils a confirmer" }
     }
   ]
 }

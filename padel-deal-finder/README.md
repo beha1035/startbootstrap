@@ -40,6 +40,7 @@ contournement anti-bot.
 - Esprit Padel — `esprit-padel-shop.com`
 - Padel Market — `padelmarket.com`
 - Padel Point — `padel-point.fr`
+- Padel Pro Shop — `padelproshop.com`
 
 Ajouter une boutique = une entrée dans `config.json` (`"platform": "shopify"`
 suffit si le site tourne sous Shopify). L'adaptateur détecte automatiquement
